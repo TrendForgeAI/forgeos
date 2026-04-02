@@ -1,10 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { setConfig } from "@/lib/config";
+import { setConfig, assertSetupIncomplete } from "@/lib/config";
 
 export async function POST(req: NextRequest) {
   try {
+    await assertSetupIncomplete();
+
     const body = await req.json();
     const { git, ai, project } = body;
 
@@ -34,6 +36,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
+    const e = err as { status?: number; message?: string };
+    if (e.status === 410) return NextResponse.json({ error: "Setup already complete" }, { status: 410 });
     console.error("Setup save error:", err);
     return NextResponse.json({ error: "Failed to save setup" }, { status: 500 });
   }

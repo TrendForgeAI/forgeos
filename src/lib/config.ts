@@ -20,6 +20,11 @@ export async function isSetupComplete(): Promise<boolean> {
   return adminExists !== null;
 }
 
+export async function assertSetupIncomplete(): Promise<void> {
+  const done = await isSetupComplete();
+  if (done) throw Object.assign(new Error("Setup already complete"), { status: 410 });
+}
+
 export async function getProviderRouting(): Promise<{
   activeOrchestrator: string;
   routing: Record<string, string>;

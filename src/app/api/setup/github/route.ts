@@ -1,12 +1,14 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { setConfig } from "@/lib/config";
+import { setConfig, assertSetupIncomplete } from "@/lib/config";
 
 const GH_CLIENT_ID = "Ov23liNt3J8bpNqHXYqP"; // GitHub CLI app ID (public)
 
 export async function POST() {
   try {
+    await assertSetupIncomplete();
+
     const res = await fetch("https://github.com/login/device/code", {
       method: "POST",
       headers: {
@@ -31,13 +33,17 @@ export async function POST() {
       expiresIn: data.expires_in,
       interval: data.interval,
     });
-  } catch {
+  } catch (err) {
+    const e = err as { status?: number; message?: string };
+    if (e.status === 410) return NextResponse.json({ error: "Setup already complete" }, { status: 410 });
     return NextResponse.json({ error: "Failed to start GitHub auth" }, { status: 500 });
   }
 }
 
 export async function PUT(req: NextRequest) {
   try {
+    await assertSetupIncomplete();
+
     const { deviceCode } = await req.json();
     if (!deviceCode) {
       return NextResponse.json({ error: "deviceCode required" }, { status: 400 });
@@ -66,7 +72,9 @@ export async function PUT(req: NextRequest) {
 
     // Still waiting or error
     return NextResponse.json({ authenticated: false, error: data.error });
-  } catch {
+  } catch (err) {
+    const e = err as { status?: number; message?: string };
+    if (e.status === 410) return NextResponse.json({ error: "Setup already complete" }, { status: 410 });
     return NextResponse.json({ error: "Failed to check GitHub auth" }, { status: 500 });
   }
 }

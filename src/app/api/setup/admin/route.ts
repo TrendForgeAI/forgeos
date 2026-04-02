@@ -3,14 +3,11 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
-import { isSetupComplete } from "@/lib/config";
+import { assertSetupIncomplete } from "@/lib/config";
 
 export async function POST(req: NextRequest) {
   try {
-    const alreadyDone = await isSetupComplete();
-    if (alreadyDone) {
-      return NextResponse.json({ error: "Setup already complete" }, { status: 409 });
-    }
+    await assertSetupIncomplete();
 
     const { name, email, password } = await req.json();
 
@@ -33,6 +30,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
+    const e = err as { status?: number; message?: string };
+    if (e.status === 410) return NextResponse.json({ error: "Setup already complete" }, { status: 410 });
     console.error("Admin setup error:", err);
     return NextResponse.json({ error: "Failed to create admin account" }, { status: 500 });
   }
