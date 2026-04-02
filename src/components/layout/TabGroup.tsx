@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import TabBar from "./TabBar";
 import { GroupState, TabItem, PanelType, defaultTab } from "./panel-types";
@@ -21,12 +22,12 @@ interface Props {
 export default function TabGroup({ group, projectPath, onGroupChange, openFilePath }: Props) {
   const activeTab = group.tabs.find(t => t.id === group.activeTabId) ?? group.tabs[0];
 
-  // Open file in new viewer tab if requested
-  if (openFilePath && !group.tabs.find(t => t.filePath === openFilePath)) {
-    const tab = defaultTab("viewer", openFilePath);
-    const newTabs = [...group.tabs, tab];
-    onGroupChange({ tabs: newTabs, activeTabId: tab.id });
-  }
+  useEffect(() => {
+    if (openFilePath && !group.tabs.find(t => t.filePath === openFilePath)) {
+      const tab = defaultTab("viewer", openFilePath);
+      onGroupChange({ tabs: [...group.tabs, tab], activeTabId: tab.id });
+    }
+  }, [openFilePath]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function selectTab(id: string) {
     onGroupChange({ ...group, activeTabId: id });

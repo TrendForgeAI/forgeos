@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import SplitPane from "./SplitPane";
 import TabGroup from "./TabGroup";
-import { LayoutMode, LayoutState, GroupState, loadLayout, saveLayout, defaultLayout } from "./panel-types";
+import { LayoutMode, LayoutState, GroupState, loadLayout, saveLayout } from "./panel-types";
 
 interface Props {
   activeProject: string | null;
@@ -12,11 +12,10 @@ interface Props {
 }
 
 export default function PanelGrid({ activeProject, layout, openFilePath }: Props) {
-  const [state, setState] = useState<LayoutState>(defaultLayout);
-
-  useEffect(() => {
-    setState(loadLayout());
-  }, []);
+  const [state, setState] = useState<LayoutState>(() => {
+    // loadLayout() guards for SSR with typeof window check
+    return loadLayout();
+  });
 
   useEffect(() => {
     setState(s => ({ ...s, mode: layout }));
