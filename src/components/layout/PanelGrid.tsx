@@ -1,19 +1,65 @@
 "use client";
 
-import dynamic from "next/dynamic";
-
-const TerminalPanel = dynamic(() => import("@/components/terminal/TerminalPanel"), { ssr: false });
+import { useState, useEffect } from "react";
+import SplitPane from "./SplitPane";
+import TabGroup from "./TabGroup";
+import { LayoutMode, LayoutState, GroupState, loadLayout, saveLayout, defaultLayout } from "./panel-types";
 
 interface Props {
   activeProject: string | null;
-  layout?: "single" | "split-h" | "split-v";
+  layout: LayoutMode;
   openFilePath?: string | null;
 }
 
-export default function PanelGrid({ activeProject, layout = "single", openFilePath: _openFilePath }: Props) {
+export default function PanelGrid({ activeProject, layout, openFilePath }: Props) {
+  const [state, setState] = useState<LayoutState>(defaultLayout);
+
+  useEffect(() => {
+    setState(loadLayout());
+  }, []);
+
+  useEffect(() => {
+    setState(s => ({ ...s, mode: layout }));
+  }, [layout]);
+
+  useEffect(() => {
+    saveLayout(state);
+  }, [state]);
+
+  function updateGroupA(g: GroupState) {
+    setState(s => ({ ...s, groupA: g }));
+  }
+  function updateGroupB(g: GroupState) {
+    setState(s => ({ ...s, groupB: g }));
+  }
+
+  const groupA = (
+    <TabGroup
+      group={state.groupA}
+      projectPath={activeProject}
+      onGroupChange={updateGroupA}
+      openFilePath={openFilePath}
+    />
+  );
+  const groupB = (
+    <TabGroup
+      group={state.groupB}
+      projectPath={activeProject}
+      onGroupChange={updateGroupB}
+    />
+  );
+
+  if (state.mode === "single") {
+    return <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>{groupA}</div>;
+  }
+
   return (
-    <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-      <TerminalPanel projectPath={activeProject ? `/workspace/${activeProject}` : "/workspace"} />
-    </div>
+    <SplitPane
+      direction={state.mode === "split-h" ? "horizontal" : "vertical"}
+      ratio={state.splitRatio}
+      onRatioChange={(r) => setState(s => ({ ...s, splitRatio: r }))}
+      first={groupA}
+      second={groupB}
+    />
   );
 }
