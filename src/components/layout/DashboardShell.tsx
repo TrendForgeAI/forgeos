@@ -27,6 +27,7 @@ export default function DashboardShell({ user }: Props) {
   const [orchestrator, setOrchestrator] = useState<"claude" | "codex">("claude");
   const [overlay, setOverlay] = useState<"global-settings" | "project-settings" | null>(null);
   const [layout, setLayout] = useState<"single" | "split-h" | "split-v">("single");
+  const [openFilePath, setOpenFilePath] = useState<string | null>(null);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", background: "var(--bg)" }}>
@@ -46,10 +47,11 @@ export default function DashboardShell({ user }: Props) {
           <Sidebar
             activeProject={activeProject}
             onSelectProject={setActiveProject}
+            onOpenFile={setOpenFilePath}
           />
         )}
         <main style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-          <PanelGrid activeProject={activeProject} layout={layout} />
+          <PanelGrid activeProject={activeProject} layout={layout} openFilePath={openFilePath} />
         </main>
       </div>
 

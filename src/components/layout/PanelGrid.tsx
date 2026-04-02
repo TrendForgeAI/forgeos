@@ -7,9 +7,10 @@ const TerminalPanel = dynamic(() => import("@/components/terminal/TerminalPanel"
 interface Props {
   activeProject: string | null;
   layout?: "single" | "split-h" | "split-v";
+  openFilePath?: string | null;
 }
 
-export default function PanelGrid({ activeProject, layout = "single" }: Props) {
+export default function PanelGrid({ activeProject, layout = "single", openFilePath: _openFilePath }: Props) {
   return (
     <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
       <TerminalPanel projectPath={activeProject ? `/workspace/${activeProject}` : "/workspace"} />
