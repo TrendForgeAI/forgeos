@@ -38,14 +38,12 @@ Everything transparent, everything understood.
 
 ### User Model
 
-The container runs as non-root user `forge`. This is Docker security best
-practice and also required because Claude Code refuses
-`--dangerously-skip-permissions` as root.
+The container runs as root user. This allows Claude Code and other tools to
+operate without permission restrictions. All data directories are owned by root.
 
-- `FORGE_UID` / `FORGE_GID` are build args (default: 1000/1000)
-- Compose runs: `user: "${FORGE_UID}:${FORGE_GID}"`
-- A single `entrypoint.sh` rejects root startup with a clear error message
-- Volume mount points are pre-created in the Dockerfile as `forge` user
+- Container starts with `node:24-slim` default user (root)
+- Entrypoint creates data directories at startup
+- All credentials and projects are stored in volumes mounted at `/root`
 
 ### Process Model
 
@@ -57,10 +55,10 @@ practice and also required because Claude Code refuses
 
 | Volume              | Mount Point              | Contents                          |
 |---------------------|--------------------------|-----------------------------------|
-| `forgeos-data`      | `/home/forge/.forgeos`   | SQLite DB, config                 |
-| `claude-data`       | `/home/forge/.claude`    | Claude Code credentials           |
-| `ssh-keys`          | `/home/forge/.ssh`       | SSH keypair                       |
-| `gh-config`         | `/home/forge/.config/gh` | GitHub CLI auth tokens            |
+| `forgeos-data`      | `/root/.forgeos`   | SQLite DB, config                 |
+| `claude-data`       | `/root/.claude`    | Claude Code credentials           |
+| `ssh-keys`          | `/root/.ssh`       | SSH keypair                       |
+| `gh-config`         | `/root/.config/gh` | GitHub CLI auth tokens            |
 | `forgeos-workspace` | `/workspace`             | Project repos                     |
 
 ---
@@ -75,17 +73,17 @@ practice and also required because Claude Code refuses
 ### Phase 1: Container + Wizard + Auth
 
 **Implemented:**
-- [ ] Dockerfile (Node.js 24 Slim, forge user, Claude Code, Codex, gh)
-- [ ] docker-compose.yaml (FORGE_UID/FORGE_GID, non-root user mapping, Traefik labels)
-- [ ] Single entrypoint.sh with root-start guard
-- [ ] Next.js project skeleton
-- [ ] SQLite schema (users, projects, sessions, config) via Prisma
-- [ ] Basic dashboard shell
-- [ ] README.md + SETUP.md
+- [x] Dockerfile (Node.js 24 Slim, root user, Claude Code, Codex, gh)
+- [x] docker-compose.yaml (named volumes, Traefik labels)
+- [x] Single entrypoint.sh with setup validation
+- [x] Next.js project skeleton
+- [x] SQLite schema (users, projects, sessions, config) via Prisma
+- [x] Basic dashboard shell
+- [x] README.md + SETUP.md
 
 **In Progress:**
-- [ ] Auth system complete (invite workflow + revoke flows still open)
-- [ ] Setup Wizard complete device-flow automation for all providers
+- [x] Auth system complete (invite workflow, session management, revoke flows)
+- [x] Setup Wizard with device-flow automation for all providers
 
 **Planned:**
 - [ ] Fully automated OAuth/device-flow polling and callback handling
@@ -104,16 +102,19 @@ curl -fsS http://localhost:3000/api/setup/status
 ### Phase 2: Web-UI Core
 
 **Implemented:**
-- [ ] Dashboard layout skeleton (PanelGrid, MenuBar, StatusBar, Sidebar shell)
-- [ ] Sidebar: Project list + File tree
-- [ ] Terminal panel (xterm.js + WebSocket PTY)
-- [ ] Provider control-plane UI (active orchestrator + task routing)
+- [x] Dashboard layout skeleton (PanelGrid, MenuBar, StatusBar, Sidebar shell)
+- [x] Sidebar: Project list + File tree with git status badges
+- [x] Terminal panel (xterm.js + WebSocket PTY)
+- [x] Provider control-plane UI (active orchestrator selection)
+- [x] Settings overlay (Global and Project settings)
+- [x] User menu with profile and logout
+- [x] File editor panel (CodeMirror viewer/editor)
+- [x] Git integration (commit overlay, push button)
+- [x] Tab-group panel system (single/split layouts, localStorage persistence)
 
 **In Progress:**
 - [ ] AI Chat panel runtime integration
-- [ ] File editor panel (CodeMirror)
 - [ ] Preview panel
-- [ ] Panel grid reposition + persisted layout
 - [ ] Status bar full runtime data (live branch/model)
 - [ ] Project context switching backend integration
 
@@ -402,3 +403,20 @@ curl -fsS http://localhost:3000/api/provider-routing
 | MVP auth providers? | GitHub + Claude + Codex | Sufficient for MVP (D10) |
 | Data retention? | Short default + optional extension | Privacy-friendly default (D11) |
 | Delivery gates? | Testable acceptance criteria | TDD-oriented quality gates (D12) |
+
+---
+
+## Phase 2 Features
+
+Implemented in Phase 2 (2026-04-02):
+
+- **Setup security hardening** — one-time only, 410 Gone after completion, server-side redirect
+- **Extended auth methods** — Git: Device Flow, PAT, SSH key; Claude: API key, OAuth; Codex: API key, Device Flow, Azure
+- **Settings overlay** — Global (Git/Claude/Codex) and Project settings, modal overlay from user menu
+- **User menu** — dropdown with profile, global settings, project settings, logout
+- **Sidebar file tree** — lazy-loaded tree, git status badges (M/U/D), right-click context menu, inline rename
+- **Git integration** — commit overlay with file selection, push button, toast notifications
+- **Tab-group panel system** — single/split-h/split-v layouts, draggable splitter, localStorage persistence
+- **CodeMirror editor** — viewer/editor modes, syntax highlighting, Ctrl+S save, dirty indicator
+- **Two-layer AI memory** — base knowledge in `docs/ai-context/` (Git), learned memory in `/root/.forgeos/ai-memory/` (volume)
+- **File + Git API routes** — `/api/files/*` and `/api/git/*` with path validation and auth
