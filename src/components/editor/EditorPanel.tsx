@@ -36,6 +36,7 @@ function getLanguage(path: string) {
 export default function EditorPanel({ filePath, readOnly, onDirtyChange, onModeChange }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const savedContentRef = useRef("");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -49,9 +50,10 @@ export default function EditorPanel({ filePath, readOnly, onDirtyChange, onModeC
     setLoading(true);
     setError("");
     setDirty(false);
+    onDirtyChange(false);
     fetch(`/api/files/read?path=${encodeURIComponent(filePath)}`)
       .then(r => r.json())
-      .then(data => { if (data.content !== undefined) setContent(data.content); else setError(data.error ?? "Failed"); })
+      .then(data => { if (data.content !== undefined) { setContent(data.content); savedContentRef.current = data.content; } else setError(data.error ?? "Failed"); })
       .catch(() => setError("Failed to load file"))
       .finally(() => setLoading(false));
   }, [filePath]);
@@ -74,7 +76,7 @@ export default function EditorPanel({ filePath, readOnly, onDirtyChange, onModeC
         EditorView.editable.of(!readOnly),
         EditorView.updateListener.of(update => {
           if (update.docChanged && !readOnly) {
-            const isDirty = update.state.doc.toString() !== content;
+            const isDirty = update.state.doc.toString() !== savedContentRef.current;
             setDirty(isDirty);
             onDirtyChange(isDirty);
           }
@@ -89,7 +91,7 @@ export default function EditorPanel({ filePath, readOnly, onDirtyChange, onModeC
       viewRef.current?.destroy();
       viewRef.current = null;
     };
-  }, [content, readOnly, loading, filePath]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loading, filePath, readOnly]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSave = useCallback(async () => {
     if (!viewRef.current) return;
@@ -102,9 +104,12 @@ export default function EditorPanel({ filePath, readOnly, onDirtyChange, onModeC
         body: JSON.stringify({ path: filePath, content: newContent }),
       });
       if (res.ok) {
-        setContent(newContent);
+        savedContentRef.current = newContent;
         setDirty(false);
         onDirtyChange(false);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setError(errData.error ?? "Failed to save file");
       }
     } finally {
       setSaving(false);
