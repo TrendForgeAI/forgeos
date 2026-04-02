@@ -1,0 +1,59 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+interface Props {
+  activeProject: string | null;
+  onClose: () => void;
+}
+
+type Tab = "forgeos" | "subprojects";
+
+export default function ProjectSettingsOverlay({ activeProject, onClose }: Props) {
+  const [tab, setTab] = useState<Tab>("forgeos");
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const tabBtn = (t: Tab, label: string) => (
+    <button key={t} type="button" onClick={() => setTab(t)} style={{
+      padding: "8px 16px", borderBottom: "2px solid",
+      borderColor: tab === t ? "var(--accent)" : "transparent",
+      background: "transparent", color: tab === t ? "var(--accent)" : "var(--muted)",
+      cursor: "pointer", fontSize: "13px", fontWeight: tab === t ? 600 : 400,
+    }}>{label}</button>
+  );
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px", width: "560px", maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid var(--border)" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: "600" }}>Project Settings</h2>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: "18px" }}>×</button>
+        </div>
+        <div style={{ display: "flex", borderBottom: "1px solid var(--border)" }}>
+          {tabBtn("forgeos", "ForgeOS Project")}
+          {tabBtn("subprojects", "Subprojects")}
+        </div>
+        <div style={{ flex: 1, overflow: "auto", padding: "20px" }}>
+          {tab === "forgeos" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div>
+                <label style={{ fontSize: "13px", color: "var(--muted)", display: "block", marginBottom: "6px" }}>Active Project Path</label>
+                <input readOnly value={activeProject ?? "(none selected)"} style={{ width: "100%", opacity: 0.7 }} />
+              </div>
+              <p style={{ fontSize: "13px", color: "var(--muted)" }}>Additional project settings (versioning logic, CI config) will appear here in future releases.</p>
+            </div>
+          )}
+          {tab === "subprojects" && (
+            <p style={{ fontSize: "13px", color: "var(--muted)" }}>Per-subproject settings will appear here in future releases.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
