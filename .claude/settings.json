@@ -1,0 +1,32 @@
+{
+  "enabledPlugins": {
+    "claude-md-management@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "gitlab@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "Edit",
+      "MultiEdit",
+      "Glob",
+      "Grep",
+      "Bash(git:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(tsx:*)",
+      "Bash(prisma:*)",
+      "Bash(docker:*)",
+      "Bash(docker compose:*)",
+      "Bash(ssh:*)",
+      "Bash(ssh-keygen:*)",
+      "Bash(ssh-keyscan:*)",
+      "Bash(gh:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(jq:*)"
+    ]
+  }
+}

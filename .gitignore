@@ -12,3 +12,7 @@ Thumbs.db
 *.swp
 prisma/*.db
 prisma/*.db-journal
+server.js
+next-env.d.ts
+.claude/*
+!.claude/settings.json
