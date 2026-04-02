@@ -13,13 +13,20 @@ type Tab = "git" | "claude" | "codex";
 
 export default function GlobalSettingsOverlay({ onClose }: Props) {
   const [tab, setTab] = useState<Tab>("git");
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => { onCloseRef.current = onClose; });
 
   useEffect(() => {
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
+    dialogRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onCloseRef.current(); }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, []);
 
   const tabBtn = (t: Tab, label: string) => (
     <button key={t} type="button" onClick={() => setTab(t)} style={{
@@ -33,10 +40,10 @@ export default function GlobalSettingsOverlay({ onClose }: Props) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div ref={overlayRef} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px", width: "560px", maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="global-settings-title" tabIndex={-1} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px", width: "560px", maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid var(--border)" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: "600" }}>Global Settings</h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: "18px" }}>×</button>
+          <h2 id="global-settings-title" style={{ fontSize: "16px", fontWeight: "600" }}>Global Settings</h2>
+          <button aria-label="Close" onClick={onClose} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: "18px" }}>×</button>
         </div>
         <div style={{ display: "flex", borderBottom: "1px solid var(--border)" }}>
           {tabBtn("git", "Git")}

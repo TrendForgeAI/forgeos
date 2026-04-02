@@ -23,7 +23,11 @@ export default function UserMenu({ user, onOpenGlobalSettings, onOpenProjectSett
   }, []);
 
   async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // Continue with redirect even if server request fails
+    }
     router.push("/login");
   }
 
