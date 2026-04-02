@@ -22,7 +22,8 @@ export default function PanelGrid({ activeProject, layout, openFilePath }: Props
   }, [layout]);
 
   useEffect(() => {
-    saveLayout(state);
+    const t = setTimeout(() => saveLayout(state), 300);
+    return () => clearTimeout(t);
   }, [state]);
 
   function updateGroupA(g: GroupState) {
