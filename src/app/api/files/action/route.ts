@@ -34,7 +34,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
-    const e = err as { status?: number };
+    const e = err as { status?: number; message?: string };
+    if (e.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     if (e.status === 403) return NextResponse.json({ error: "Path not allowed" }, { status: 403 });
     return NextResponse.json({ error: "Failed to perform action" }, { status: 500 });
   }

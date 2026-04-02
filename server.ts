@@ -1,6 +1,7 @@
 // Custom Next.js server with WebSocket support for terminal PTY
 import { createServer } from "http";
 import { parse } from "url";
+import { resolve } from "path";
 import next from "next";
 import { WebSocketServer, WebSocket } from "ws";
 import pty from "node-pty";
@@ -63,9 +64,40 @@ app.prepare().then(() => {
     });
   });
 
-  server.on("upgrade", (req, socket, head) => {
-    const { pathname } = parse(req.url || "");
+  server.on("upgrade", async (req, socket, head) => {
+    const { pathname, query } = parse(req.url || "", true);
     if (pathname === "/api/terminal") {
+      // Authenticate WebSocket connection
+      const cookieHeader = req.headers.cookie ?? "";
+      const sessionMatch = cookieHeader.match(/(?:^|;\s*)forgeos_session=([^;]+)/);
+      const sessionToken = sessionMatch?.[1];
+      if (!sessionToken) {
+        socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+        socket.destroy();
+        return;
+      }
+      // Validate session in DB
+      const { PrismaClient } = await import("@prisma/client");
+      const prisma = new PrismaClient();
+      const session = await prisma.session.findUnique({ where: { token: sessionToken } }).catch(() => null);
+      await prisma.$disconnect();
+      if (!session || session.expiresAt < new Date()) {
+        socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+        socket.destroy();
+        return;
+      }
+
+      // Validate cwd
+      const cwd = (query.path as string) || "/workspace";
+      const allowedRoots = ["/app", "/workspace"];
+      const resolvedCwd = resolve(cwd);
+      const cwdAllowed = allowedRoots.some(r => resolvedCwd === r || resolvedCwd.startsWith(r + "/"));
+      if (!cwdAllowed) {
+        socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
+        socket.destroy();
+        return;
+      }
+
       wss.handleUpgrade(req, socket, head, (ws) => {
         wss.emit("connection", ws, req);
       });

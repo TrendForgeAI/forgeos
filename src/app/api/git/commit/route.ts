@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { execFile } from "child_process";
 import { promisify } from "util";
+import path from "path";
 import { validatePath } from "@/lib/files";
 import { requireAuth } from "@/lib/auth";
 import { getConfig } from "@/lib/config";
@@ -23,7 +24,9 @@ export async function POST(req: NextRequest) {
 
     if (files && files.length > 0) {
       for (const f of files) {
-        const safeFile = validatePath(f);
+        // Make path absolute relative to the repo
+        const absF = f.startsWith("/") ? f : path.join(safe, f);
+        const safeFile = validatePath(absF);
         if (!safeFile.startsWith(safe + "/") && safeFile !== safe) {
           return NextResponse.json({ error: `File ${f} is outside the repository` }, { status: 400 });
         }

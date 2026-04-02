@@ -1,13 +1,13 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { exec } from "child_process";
+import { execFile } from "child_process";
 import { promisify } from "util";
 import { access } from "fs/promises";
 import { setConfig, isSetupComplete } from "@/lib/config";
 import { getSession } from "@/lib/auth";
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 const CLAUDE_AUTH_FILE = "/root/.claude/.credentials.json";
 
 export async function POST() {
@@ -19,8 +19,9 @@ export async function POST() {
   }
 
   try {
-    const { stdout } = await execAsync("claude auth login --print-url 2>&1", { timeout: 10000 });
-    const urlMatch = stdout.match(/https?:\/\/[^\s]+/);
+    const { stdout, stderr } = await execFileAsync("claude", ["auth", "login", "--print-url"], { timeout: 10000 });
+    const combined = stdout + "\n" + stderr;
+    const urlMatch = combined.match(/https?:\/\/[^\s]+/);
     if (!urlMatch) {
       return NextResponse.json({ error: "Could not get auth URL from claude" }, { status: 500 });
     }
