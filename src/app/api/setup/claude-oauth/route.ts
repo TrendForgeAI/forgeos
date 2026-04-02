@@ -4,12 +4,20 @@ import { NextResponse } from "next/server";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { access } from "fs/promises";
-import { setConfig } from "@/lib/config";
+import { setConfig, isSetupComplete } from "@/lib/config";
+import { getSession } from "@/lib/auth";
 
 const execAsync = promisify(exec);
 const CLAUDE_AUTH_FILE = "/root/.claude/.credentials.json";
 
 export async function POST() {
+  // Allow if setup is still in progress, OR if user is authenticated
+  const done = await isSetupComplete();
+  if (done) {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { stdout } = await execAsync("claude auth login --print-url 2>&1", { timeout: 10000 });
     const urlMatch = stdout.match(/https?:\/\/[^\s]+/);
@@ -24,6 +32,13 @@ export async function POST() {
 }
 
 export async function GET() {
+  // Allow if setup is still in progress, OR if user is authenticated
+  const done = await isSetupComplete();
+  if (done) {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     await access(CLAUDE_AUTH_FILE);
     await setConfig("claude_auth_method", "oauth");

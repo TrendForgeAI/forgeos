@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 type GitMethod = "device_flow" | "pat" | "ssh";
 
@@ -13,6 +13,7 @@ interface Props {
 type GHState = "idle" | "polling" | "done" | "error";
 
 export default function GitSettings({ defaultMethod = "device_flow", onSave, showSaveButton }: Props) {
+  const cancelPollRef = useRef(false);
   const [method, setMethod] = useState<GitMethod>(defaultMethod);
   const [pat, setPat] = useState("");
   const [sshPubKey, setSshPubKey] = useState("");
@@ -51,9 +52,16 @@ export default function GitSettings({ defaultMethod = "device_flow", onSave, sho
     }
   }
 
+  useEffect(() => {
+    return () => { cancelPollRef.current = true; };
+  }, []);
+
   async function pollForGitHubAuth(code: string, interval: number) {
+    cancelPollRef.current = false;
     for (let i = 0; i < 24; i++) {
+      if (cancelPollRef.current) return;
       await new Promise(r => setTimeout(r, interval * 1000));
+      if (cancelPollRef.current) return;
       try {
         const res = await fetch("/api/setup/github", {
           method: "PUT",

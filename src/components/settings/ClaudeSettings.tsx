@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 type ClaudeMethod = "api_key" | "oauth" | "skip";
 
@@ -10,6 +10,7 @@ interface Props {
 }
 
 export default function ClaudeSettings({ showSaveButton, onSave }: Props) {
+  const cancelPollRef = useRef(false);
   const [method, setMethod] = useState<ClaudeMethod>("api_key");
   const [apiKey, setApiKey] = useState("");
   const [oauthUrl, setOauthUrl] = useState("");
@@ -49,9 +50,16 @@ export default function ClaudeSettings({ showSaveButton, onSave }: Props) {
     }
   }
 
+  useEffect(() => {
+    return () => { cancelPollRef.current = true; };
+  }, []);
+
   async function pollOAuth() {
+    cancelPollRef.current = false;
     for (let i = 0; i < 60; i++) {
+      if (cancelPollRef.current) return;
       await new Promise(r => setTimeout(r, 3000));
+      if (cancelPollRef.current) return;
       try {
         const res = await fetch("/api/setup/claude-oauth");
         const json = await res.json();

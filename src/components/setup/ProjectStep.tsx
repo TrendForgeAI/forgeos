@@ -5,7 +5,7 @@ import { useState } from "react";
 interface SetupData {
   admin: { email: string; password: string; name: string } | null;
   git: { name: string; email: string; githubAuth: boolean } | null;
-  ai: { claude: { method: string; value: string } | null; codex: { apiKey: string } | null };
+  ai: { claude: { method: string; value: string } | null; codex: { method: string; apiKey?: string; azureEndpoint?: string; azureKey?: string; authenticated?: boolean } | null };
   project: { repoUrl: string; name: string } | null;
 }
 
@@ -64,7 +64,7 @@ export default function ProjectStep({ setupData, onComplete }: Props) {
           <span>Git: {setupData.git?.name} &lt;{setupData.git?.email}&gt;</span>
           <span>GitHub: {setupData.git?.githubAuth ? "✓ Connected" : "— Skipped"}</span>
           <span>Claude: {setupData.ai.claude ? "✓ API Key" : "— Skipped"}</span>
-          <span>Codex: {setupData.ai.codex ? "✓ API Key" : "— Skipped"}</span>
+          <span>Codex: {setupData.ai.codex ? `✓ ${setupData.ai.codex.method}` : "— Skipped"}</span>
         </div>
       </div>
 

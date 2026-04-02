@@ -11,7 +11,7 @@ type Step = "admin" | "git" | "ai" | "project" | "done";
 interface SetupData {
   admin: { email: string; password: string; name: string } | null;
   git: { name: string; email: string; githubAuth: boolean } | null;
-  ai: { claude: { method: string; value: string } | null; codex: { apiKey: string } | null };
+  ai: { claude: { method: string; value: string } | null; codex: { method: string; apiKey?: string; azureEndpoint?: string; azureKey?: string; authenticated?: boolean } | null };
   project: { repoUrl: string; name: string } | null;
 }
 

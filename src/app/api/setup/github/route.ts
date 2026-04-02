@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { setConfig, assertSetupIncomplete } from "@/lib/config";
+import { setConfig, assertSetupIncomplete, isSetupComplete } from "@/lib/config";
+import { getSession } from "@/lib/auth";
 
 const GH_CLIENT_ID = "Ov23liNt3J8bpNqHXYqP"; // GitHub CLI app ID (public)
 
@@ -42,6 +43,13 @@ export async function POST() {
 
 export async function PATCH(req: NextRequest) {
   try {
+    // Allow if setup is still in progress, OR if user is authenticated
+    const done = await isSetupComplete();
+    if (done) {
+      const session = await getSession();
+      if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { pat } = await req.json();
     if (!pat) return NextResponse.json({ error: "pat required" }, { status: 400 });
     await setConfig("github_auth_status", "authenticated");

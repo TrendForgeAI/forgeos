@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 type CodexMethod = "api_key" | "device_flow" | "azure" | "skip";
 
 interface Props {
   showSaveButton?: boolean;
-  onSave?: (data: { method: CodexMethod; apiKey?: string; azureEndpoint?: string; azureKey?: string } | null) => void;
+  onSave?: (data: { method: CodexMethod; apiKey?: string; azureEndpoint?: string; azureKey?: string; authenticated?: boolean } | null) => void;
 }
 
 export default function CodexSettings({ showSaveButton, onSave }: Props) {
+  const cancelPollRef = useRef(false);
   const [method, setMethod] = useState<CodexMethod>("api_key");
   const [apiKey, setApiKey] = useState("");
   const [azureEndpoint, setAzureEndpoint] = useState("");
@@ -31,9 +32,16 @@ export default function CodexSettings({ showSaveButton, onSave }: Props) {
     }
   }
 
+  useEffect(() => {
+    return () => { cancelPollRef.current = true; };
+  }, []);
+
   async function pollDevice(code: string, interval: number) {
+    cancelPollRef.current = false;
     for (let i = 0; i < 24; i++) {
+      if (cancelPollRef.current) return;
       await new Promise(r => setTimeout(r, interval * 1000));
+      if (cancelPollRef.current) return;
       try {
         const res = await fetch("/api/setup/codex-device", {
           method: "PUT",
@@ -119,7 +127,7 @@ export default function CodexSettings({ showSaveButton, onSave }: Props) {
       {showSaveButton && (
         <button type="button" onClick={() => {
           if (method === "api_key") onSave?.({ method, apiKey });
-          else if (method === "device_flow" && deviceDone) onSave?.({ method });
+          else if (method === "device_flow" && deviceDone) onSave?.({ method, authenticated: true });
           else if (method === "azure") onSave?.({ method, azureEndpoint, azureKey });
           else onSave?.(null);
         }} className="btn-primary">
