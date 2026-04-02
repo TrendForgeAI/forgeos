@@ -16,3 +16,4 @@ server.js
 next-env.d.ts
 .claude/*
 !.claude/settings.json
+.superpowers/
