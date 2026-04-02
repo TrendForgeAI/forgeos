@@ -24,6 +24,9 @@ export async function POST(req: NextRequest) {
       const safeDest = validatePath(newPath);
       await rename(safe, safeDest);
     } else if (action === "delete") {
+      if (safe === "/app" || safe === "/workspace") {
+        return NextResponse.json({ error: "Cannot delete root directory" }, { status: 400 });
+      }
       await rm(safe, { recursive: true, force: true });
     } else {
       return NextResponse.json({ error: "Unknown action" }, { status: 400 });

@@ -23,8 +23,8 @@ export async function POST(req: NextRequest) {
 
     if (files && files.length > 0) {
       for (const f of files) {
-        validatePath(f);
-        await execFileAsync("git", ["add", "--", f], { cwd: safe, env });
+        const safeFile = validatePath(f);
+        await execFileAsync("git", ["add", "--", safeFile], { cwd: safe, env });
       }
     } else {
       await execFileAsync("git", ["add", "-A"], { cwd: safe, env });
@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, output: stdout });
   } catch (err: unknown) {
     const e = err as { stderr?: string; message?: string };
+    if (e.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     return NextResponse.json({ error: e.stderr ?? e.message ?? "Commit failed" }, { status: 500 });
   }
 }
