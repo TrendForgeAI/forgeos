@@ -18,7 +18,7 @@ export default function TerminalPanel({ projectPath }: Props) {
     async function init() {
       const { Terminal } = await import("@xterm/xterm");
       const { FitAddon } = await import("@xterm/addon-fit");
-      await import("@xterm/xterm/css/xterm.css");
+      // xterm CSS is injected via globals.css @import
 
       if (!containerRef.current) return;
 
