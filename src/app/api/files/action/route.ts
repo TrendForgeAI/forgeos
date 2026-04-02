@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     const safe = validatePath(filePath);
 
     if (action === "mkdir") {
-      const dirPath = name ? path.join(safe, name) : safe;
+      const dirPath = name ? validatePath(path.join(safe, name)) : safe;
       await mkdir(dirPath, { recursive: true });
     } else if (action === "newfile") {
       const newFile = path.join(safe, name ?? "newfile.txt");
