@@ -40,6 +40,18 @@ export async function POST() {
   }
 }
 
+export async function PATCH(req: NextRequest) {
+  try {
+    const { pat } = await req.json();
+    if (!pat) return NextResponse.json({ error: "pat required" }, { status: 400 });
+    await setConfig("github_auth_status", "authenticated");
+    await setConfig("github_token", pat);
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json({ error: "Failed to save PAT" }, { status: 500 });
+  }
+}
+
 export async function PUT(req: NextRequest) {
   try {
     await assertSetupIncomplete();
