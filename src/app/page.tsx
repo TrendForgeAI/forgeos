@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { redirect } from "next/navigation";
 import { isSetupComplete } from "@/lib/config";
 import { getSession } from "@/lib/auth";

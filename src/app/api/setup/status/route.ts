@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { isSetupComplete, getConfig } from "@/lib/config";
 

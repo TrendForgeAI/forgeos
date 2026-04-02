@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // WebSocket for terminal is handled by the custom server (server.ts)
 // This file exists for Next.js routing compatibility
 import { NextResponse } from "next/server";
