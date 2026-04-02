@@ -1,0 +1,51 @@
+services:
+  forgeos:
+    build:
+      context: .
+      args:
+        FORGE_UID: ${FORGE_UID:-1000}
+        FORGE_GID: ${FORGE_GID:-1000}
+    image: forgeos:latest
+    container_name: forgeos
+    restart: unless-stopped
+    user: "${FORGE_UID:-1000}:${FORGE_GID:-1000}"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/home/forge/.forgeos/forgeos.db
+      - SESSION_SECRET=${SESSION_SECRET}
+      - DOMAIN=${DOMAIN:-forgeos.trend-forge.dev}
+    volumes:
+      - forgeos-data:/home/forge/.forgeos
+      - claude-data:/home/forge/.claude
+      - ssh-keys:/home/forge/.ssh
+      - gh-config:/home/forge/.config/gh
+      - forgeos-workspace:/workspace
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.forgeos.rule=Host(`${DOMAIN:-forgeos.trend-forge.dev}`)"
+      - "traefik.http.routers.forgeos.entrypoints=websecure"
+      - "traefik.http.routers.forgeos.tls=true"
+      - "traefik.http.routers.forgeos.tls.certresolver=letsencrypt"
+      - "traefik.http.services.forgeos.loadbalancer.server.port=3000"
+      - "traefik.http.routers.forgeos-http.rule=Host(`${DOMAIN:-forgeos.trend-forge.dev}`)"
+      - "traefik.http.routers.forgeos-http.entrypoints=web"
+      - "traefik.http.routers.forgeos-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+volumes:
+  forgeos-data:
+    name: forgeos-data
+  claude-data:
+    name: claude-data
+  ssh-keys:
+    name: forgeos-ssh-keys
+  gh-config:
+    name: forgeos-gh-config
+  forgeos-workspace:
+    name: forgeos-workspace
+
+networks:
+  proxy:
+    external: true
