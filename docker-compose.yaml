@@ -1,24 +1,19 @@
 services:
   forgeos:
-    build:
-      context: .
-      args:
-        FORGE_UID: ${FORGE_UID:-1000}
-        FORGE_GID: ${FORGE_GID:-1000}
+    build: .
     image: forgeos:latest
     container_name: forgeos
     restart: unless-stopped
-    user: "${FORGE_UID:-1000}:${FORGE_GID:-1000}"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=file:/home/forge/.forgeos/forgeos.db
+      - DATABASE_URL=file:/root/.forgeos/forgeos.db
       - SESSION_SECRET=${SESSION_SECRET}
       - DOMAIN=${DOMAIN:-forgeos.trend-forge.dev}
     volumes:
-      - forgeos-data:/home/forge/.forgeos
-      - claude-data:/home/forge/.claude
-      - ssh-keys:/home/forge/.ssh
-      - gh-config:/home/forge/.config/gh
+      - forgeos-data:/root/.forgeos
+      - claude-data:/root/.claude
+      - ssh-keys:/root/.ssh
+      - gh-config:/root/.config/gh
       - forgeos-workspace:/workspace
     networks:
       - proxy

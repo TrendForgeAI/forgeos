@@ -1,8 +1,5 @@
 FROM node:24-slim
 
-ARG FORGE_UID=1000
-ARG FORGE_GID=1000
-
 # System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
@@ -24,26 +21,6 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
     apt-get update && apt-get install -y gh && \
     rm -rf /var/lib/apt/lists/*
 
-# Create forge user
-RUN groupadd -g ${FORGE_GID} forge && \
-    useradd -u ${FORGE_UID} -g forge -m -s /bin/bash -d /home/forge forge
-
-# Pre-create volume mount points with correct ownership
-RUN mkdir -p /home/forge/.forgeos \
-             /home/forge/.claude \
-             /home/forge/.ssh \
-             /home/forge/.config/gh \
-             /workspace \
-             /app && \
-    chown -R forge:forge /home/forge /workspace /app
-
-# Copy and prepare entrypoint while still root
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-# Switch to non-root forge user for all subsequent steps
-USER forge
-
 # Install global npm tools
 RUN npm install -g \
     @anthropic-ai/claude-code \
@@ -52,12 +29,14 @@ RUN npm install -g \
 
 # Copy app source and install dependencies
 WORKDIR /app
-COPY --chown=forge:forge . .
-
+COPY . .
 RUN npm install
 
 # Build Next.js + compile custom server
 RUN npm run build
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 3000
 
