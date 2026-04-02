@@ -24,6 +24,9 @@ export async function POST(req: NextRequest) {
     if (files && files.length > 0) {
       for (const f of files) {
         const safeFile = validatePath(f);
+        if (!safeFile.startsWith(safe + "/") && safeFile !== safe) {
+          return NextResponse.json({ error: `File ${f} is outside the repository` }, { status: 400 });
+        }
         await execFileAsync("git", ["add", "--", safeFile], { cwd: safe, env });
       }
     } else {

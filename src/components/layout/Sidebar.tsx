@@ -43,15 +43,24 @@ export default function Sidebar({ activeProject, onSelectProject, onOpenFile }: 
   }, []);
 
   const loadRootItems = useCallback(async () => {
-    const res = await fetch(`/api/files?path=${encodeURIComponent(repoPath)}`);
-    const json = await res.json();
-    setRootItems(json.items ?? []);
+    try {
+      const res = await fetch(`/api/files?path=${encodeURIComponent(repoPath)}`);
+      const json = await res.json();
+      if (!res.ok) { setRootItems([]); return; }
+      setRootItems(json.items ?? []);
+    } catch {
+      setRootItems([]);
+    }
   }, [repoPath]);
 
   const loadGitStatus = useCallback(async () => {
-    const res = await fetch(`/api/git/status?path=${encodeURIComponent(repoPath)}`);
-    const json = await res.json();
-    setGitChanges(json.changes ?? []);
+    try {
+      const res = await fetch(`/api/git/status?path=${encodeURIComponent(repoPath)}`);
+      const json = await res.json();
+      setGitChanges(json.changes ?? []);
+    } catch {
+      setGitChanges([]);
+    }
   }, [repoPath]);
 
   useEffect(() => {

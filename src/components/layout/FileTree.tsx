@@ -39,10 +39,13 @@ export default function FileTree({ items, basePath, gitChanges, depth = 0, onFil
   function toggleDir(item: TreeItem) {
     setExpanded(s => {
       const next = new Set(s);
-      if (next.has(item.path)) { next.delete(item.path); }
-      else { next.add(item.path); loadChildren(item.path); }
+      if (next.has(item.path)) next.delete(item.path);
+      else next.add(item.path);
       return next;
     });
+    if (!expanded.has(item.path)) {
+      loadChildren(item.path);
+    }
   }
 
   function getStatusBadge(itemPath: string, type: "file" | "dir") {
@@ -57,24 +60,36 @@ export default function FileTree({ items, basePath, gitChanges, depth = 0, onFil
     if (action === "newfile") {
       const name = prompt("File name:");
       if (!name) return;
-      await fetch("/api/files/action", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "newfile", path: item.path, name }) });
-      if (item.type === "dir") { await loadChildren(item.path); setExpanded(s => new Set([...s, item.path])); }
-      else onRefresh();
+      try {
+        const res = await fetch("/api/files/action", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "newfile", path: item.path, name }) });
+        if (!res.ok) { const j = await res.json(); alert(j.error ?? "Failed to create file"); return; }
+        if (item.type === "dir") { await loadChildren(item.path); setExpanded(s => new Set([...s, item.path])); }
+        else onRefresh();
+      } catch { alert("Failed to create file"); }
     } else if (action === "mkdir") {
       const name = prompt("Folder name:");
       if (!name) return;
-      await fetch("/api/files/action", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "mkdir", path: item.path, name }) });
-      if (item.type === "dir") { await loadChildren(item.path); setExpanded(s => new Set([...s, item.path])); }
-      else onRefresh();
+      try {
+        const res = await fetch("/api/files/action", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "mkdir", path: item.path, name }) });
+        if (!res.ok) { const j = await res.json(); alert(j.error ?? "Failed to create folder"); return; }
+        if (item.type === "dir") { await loadChildren(item.path); setExpanded(s => new Set([...s, item.path])); }
+        else onRefresh();
+      } catch { alert("Failed to create folder"); }
     } else if (action === "delete") {
       if (!confirm(`Delete "${item.name}"?`)) return;
-      await fetch("/api/files/action", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "delete", path: item.path }) });
-      onRefresh();
+      try {
+        const res = await fetch("/api/files/action", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "delete", path: item.path }) });
+        if (!res.ok) { const j = await res.json(); alert(j.error ?? "Failed to delete"); return; }
+        onRefresh();
+      } catch { alert("Failed to delete"); }
     } else if (action === "rename" && value) {
       const newPath = item.path.replace(/[^/]+$/, value);
-      await fetch("/api/files/action", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "rename", path: item.path, newPath }) });
-      setRenaming(null);
-      onRefresh();
+      try {
+        const res = await fetch("/api/files/action", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "rename", path: item.path, newPath }) });
+        if (!res.ok) { const j = await res.json(); alert(j.error ?? "Failed to rename"); return; }
+        setRenaming(null);
+        onRefresh();
+      } catch { alert("Failed to rename"); }
     }
   }
 
