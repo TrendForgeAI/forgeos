@@ -7,7 +7,6 @@ ARG FORGE_GID=1000
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
-    wget \
     ca-certificates \
     gnupg \
     sqlite3 \
@@ -29,37 +28,38 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
 RUN groupadd -g ${FORGE_GID} forge && \
     useradd -u ${FORGE_UID} -g forge -m -s /bin/bash -d /home/forge forge
 
-# Pre-create volume mount points as forge user
+# Pre-create volume mount points with correct ownership
 RUN mkdir -p /home/forge/.forgeos \
              /home/forge/.claude \
              /home/forge/.ssh \
              /home/forge/.config/gh \
-             /workspace && \
-    chown -R forge:forge /home/forge /workspace
+             /workspace \
+             /app && \
+    chown -R forge:forge /home/forge /workspace /app
 
-# Install global npm tools as forge user
+# Copy and prepare entrypoint while still root
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Switch to non-root forge user for all subsequent steps
 USER forge
-WORKDIR /home/forge
 
+# Install global npm tools
 RUN npm install -g \
     @anthropic-ai/claude-code \
     @openai/codex \
     prisma
 
-# Copy app source
+# Copy app source and install dependencies
 WORKDIR /app
 COPY --chown=forge:forge . .
 
-# Install app dependencies
-RUN npm ci --omit=dev 2>/dev/null || npm install
+RUN npm install
 
-# Build Next.js
+# Build Next.js + compile custom server
 RUN npm run build
 
 EXPOSE 3000
-
-COPY --chown=forge:forge entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["node", "server.js"]
