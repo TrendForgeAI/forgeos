@@ -101,3 +101,22 @@ Components: `MenuBar` → `Sidebar` + `PanelGrid` → `StatusBar`
 
 - **D9 (unresolved)**: Claude/Codex subprocess lifecycle — shared process vs. per-project. Currently undecided.
 - Phase 2 features still in progress: CodeMirror file editor, AI chat panel, persisted panel layouts, full provider routing execution.
+
+## AI Memory Layers
+
+### Base Knowledge (read on every session — in Git)
+The following files contain structured knowledge about ForgeOS:
+- `docs/ai-context/forgeos-overview.md` — what ForgeOS is
+- `docs/ai-context/architecture.md` — technical architecture
+- `docs/ai-context/components.md` — key components and file paths
+- `docs/ai-context/decisions.md` — architecture decisions and rationale
+- `docs/ai-context/codex-notes.md` — Codex-specific notes
+
+Read these when starting work in this codebase.
+
+### Learned Knowledge (persistent — in Volume, not in Git)
+Session insights and user preferences are stored in:
+- `/root/.forgeos/ai-memory/MEMORY.md` — index
+- `/root/.forgeos/ai-memory/*.md` — individual memory files
+
+This directory may not exist yet on first run — create it if needed.
