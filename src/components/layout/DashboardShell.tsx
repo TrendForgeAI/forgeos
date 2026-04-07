@@ -28,6 +28,18 @@ export default function DashboardShell({ user }: Props) {
   const [layout, setLayout] = useState<"single" | "split-h" | "split-v">("single");
   const [openFilePath, setOpenFilePath] = useState<string | null>(null);
 
+  // Load orchestrator from DB on mount
+  useEffect(() => {
+    fetch("/api/provider-routing")
+      .then(r => r.json())
+      .then(data => {
+        if (data.activeOrchestrator === "claude" || data.activeOrchestrator === "codex") {
+          setOrchestrator(data.activeOrchestrator);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", background: "var(--bg)" }}>
       <MenuBar

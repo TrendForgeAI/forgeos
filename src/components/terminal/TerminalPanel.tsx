@@ -10,6 +10,7 @@ export default function TerminalPanel({ projectPath }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<import("@xterm/xterm").Terminal | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const observerRef = useRef<ResizeObserver | null>(null);
 
   useEffect(() => {
     let term: import("@xterm/xterm").Terminal;
@@ -18,7 +19,6 @@ export default function TerminalPanel({ projectPath }: Props) {
     async function init() {
       const { Terminal } = await import("@xterm/xterm");
       const { FitAddon } = await import("@xterm/addon-fit");
-      // xterm CSS is injected via globals.css @import
 
       if (!containerRef.current) return;
 
@@ -38,14 +38,17 @@ export default function TerminalPanel({ projectPath }: Props) {
       const fitAddon = new FitAddon();
       term.loadAddon(fitAddon);
       term.open(containerRef.current);
-      fitAddon.fit();
       termRef.current = term;
+
+      // Defer fit until after layout so dimensions are final
+      requestAnimationFrame(() => fitAddon.fit());
 
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       ws = new WebSocket(`${protocol}//${window.location.host}/api/terminal?path=${encodeURIComponent(projectPath)}`);
       wsRef.current = ws;
 
       ws.onopen = () => {
+        fitAddon.fit();
         const { cols, rows } = term;
         ws.send(JSON.stringify({ type: "resize", cols, rows }));
       };
@@ -64,17 +67,27 @@ export default function TerminalPanel({ projectPath }: Props) {
         }
       });
 
-      const observer = new ResizeObserver(() => fitAddon.fit());
+      // Store observer in ref so cleanup can disconnect it
+      const observer = new ResizeObserver(() => {
+        fitAddon.fit();
+        if (ws.readyState === WebSocket.OPEN) {
+          const { cols, rows } = term;
+          ws.send(JSON.stringify({ type: "resize", cols, rows }));
+        }
+      });
       observer.observe(containerRef.current);
-
-      return () => observer.disconnect();
+      observerRef.current = observer;
     }
 
     init();
 
     return () => {
-      term?.dispose();
-      ws?.close();
+      observerRef.current?.disconnect();
+      observerRef.current = null;
+      termRef.current?.dispose();
+      termRef.current = null;
+      wsRef.current?.close();
+      wsRef.current = null;
     };
   }, [projectPath]);
 
