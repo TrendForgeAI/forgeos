@@ -6,6 +6,7 @@ import MenuBar from "./MenuBar";
 import StatusBar from "./StatusBar";
 import Sidebar from "./Sidebar";
 import PanelGrid from "./PanelGrid";
+
 const GlobalSettingsOverlay = dynamic(() => import("@/components/settings/GlobalSettingsOverlay"), { ssr: false });
 const ProjectSettingsOverlay = dynamic(() => import("@/components/settings/ProjectSettingsOverlay"), { ssr: false });
 
