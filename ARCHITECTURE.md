@@ -74,20 +74,29 @@ operate without permission restrictions. All data directories are owned by root.
 
 **Implemented:**
 - [x] Dockerfile (Node.js 24 Slim, root user, Claude Code, Codex, gh)
-- [x] docker-compose.yaml (named volumes, Traefik labels)
-- [x] Single entrypoint.sh with setup validation
-- [x] Next.js project skeleton
-- [x] SQLite schema (users, projects, sessions, config) via Prisma
-- [x] Basic dashboard shell
+- [x] docker-compose.yaml (named volumes, Traefik labels, external proxy network)
+- [x] entrypoint.sh (creates data dirs, initializes DB on first boot)
+- [x] Next.js 15 project skeleton (App Router)
+- [x] SQLite schema via Prisma (User, Session, Invite, Config, Project)
+- [x] Basic dashboard shell (DashboardShell, MenuBar, StatusBar, Sidebar, PanelGrid)
 - [x] README.md + SETUP.md
+- [x] Auth system (sessions, hashing, requireAuth, requireAdmin)
+- [x] Login / Logout pages + API routes
+- [x] Setup Wizard — 4 steps (AdminStep, GitStep, AIStep, ProjectStep)
+- [x] Setup APIs (/api/setup/admin, /api/setup/github, /api/setup/claude-test, /api/setup/save, /api/setup/status)
+- [x] GitHub Device Flow (initiate + polling in GitStep)
+- [x] Root redirect logic (/ → /setup → /login → /dashboard)
+- [x] .env.example
+- [x] Next.js middleware (route protection — auth guard for /dashboard/* and /api/*)
+- [x] Invite API (/api/admin/invites — POST, GET, DELETE/:id)
+- [x] Register page + API (/register?token=xxx — accept invite, create account)
+- [x] Invite management UI (Settings → Users & Invites, admin-only)
 
 **In Progress:**
-- [x] Auth system complete (invite workflow, session management, revoke flows)
-- [x] Setup Wizard with device-flow automation for all providers
+- [ ] Session cleanup job (expired sessions never pruned — low priority)
 
 **Planned:**
-- [ ] Fully automated OAuth/device-flow polling and callback handling
-- [ ] Invite management UI and API hardening
+- [ ] Claude OAuth / device flow as alternative to API key in wizard
 
 **Validation commands:**
 ```bash
@@ -266,8 +275,6 @@ curl -fsS http://localhost:3000/api/provider-routing
 
 > **Review 2026-04-02**: All decisions D1–D12 are marked `decided`.
 > They should be migrated to the Resolved Decisions table in the next cleanup pass.
-> **D9 discrepancy flagged**: Recommendation says "per-project subprocess lifecycle"
-> but Decision says "shared process" — confirm which is authoritative.
 
 ### D1 — ORM and Migration Tooling
 
@@ -347,8 +354,8 @@ curl -fsS http://localhost:3000/api/provider-routing
 - **Option A (shared process)** — Pros: lower resource usage. Cons: context leakage risk.
 - **Option B (per-project process)** — Pros: cleaner context boundaries. Cons: more process churn.
 - **Recommendation**: **per-project subprocess lifecycle**.
-- **Decision**: `shared process`
-- **Status**: `decided` ⚠️ *Discrepancy: recommendation ≠ decision. Needs confirmation.*
+- **Decision**: `per-project subprocess lifecycle`
+- **Status**: `decided`
 
 ### D10 — Device Flow Provider Scope
 
@@ -399,7 +406,7 @@ curl -fsS http://localhost:3000/api/provider-routing
 | Package installs? | Admin-only globally | Supply-chain risk reduction (D6) |
 | Invites? | Single-use token + expiry | Security baseline (D7) |
 | Project isolation? | Policy-first, OS-level later | Ship fast, harden in Phase 3 (D8) |
-| AI process lifecycle? | ⚠️ Unresolved — see D9 | shared vs. per-project TBD |
+| AI process lifecycle? | Per-project subprocess lifecycle | Cleaner context boundaries, no leakage between projects (D9) |
 | MVP auth providers? | GitHub + Claude + Codex | Sufficient for MVP (D10) |
 | Data retention? | Short default + optional extension | Privacy-friendly default (D11) |
 | Delivery gates? | Testable acceptance criteria | TDD-oriented quality gates (D12) |

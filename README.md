@@ -1,42 +1,56 @@
 # ForgeOS
 
-A containerized, multi-user AI development environment. Run it with Docker, set it up in the browser, start building with Claude Code or Codex.
+A containerized, multi-user AI development environment.  
+Deploy from a Git repo, run the setup wizard in your browser, start building.
 
-## What It Is
+## What is ForgeOS?
 
-ForgeOS gives AI assistants (Claude Code, OpenAI Codex) a persistent, browser-accessible workspace with:
-- Web-based IDE: terminal, file tree, editor, AI chat panels
-- Setup wizard: configure Git, Claude, and Codex auth in minutes
-- Multi-user: invite-based access with role management
-- Persistent storage: credentials and projects survive container rebuilds
+ForgeOS is a self-hosted platform that combines:
+- **Web-based terminal** — full PTY access in the browser
+- **AI coding agents** — Claude Code and Codex, per project, per-subprocess
+- **Multi-user** — invite-based access, role-based permissions (admin/user)
+- **Provider routing** — route tasks to the right model automatically
+- **Persistent storage** — credentials and projects survive container rebuilds
 
 ## Requirements
 
-- Docker and Docker Compose
-- A reverse proxy (Traefik v3 recommended) for SSL
-- One of: Anthropic API key, claude.ai account, OpenAI API key, or OpenAI device flow auth
+- Docker + Docker Compose
+- A domain with DNS pointing to your server (or use `localhost` for local dev)
+- [Traefik v3](https://traefik.io) running as reverse proxy (external Docker network `proxy`)
 
-## Quick Start
+## Quickstart
 
 ```bash
-git clone https://github.com/your-org/forgeos.git
+# 1. Clone
+git clone https://github.com/TrendForgeAI/forgeos.git
 cd forgeos
-cp .env.example .env
-# Edit .env: set DOMAIN, DATABASE_URL, and NEXTAUTH_SECRET
-docker compose up -d
-```
 
-Open `https://your-domain` in your browser and follow the Setup Wizard.
+# 2. Configure
+cp .env.example .env
+# Edit .env: set DOMAIN and SESSION_SECRET (required)
+
+# 3. Start
+docker compose up -d
+
+# 4. Open browser
+open https://your-domain.com
+# → Setup wizard guides you through the rest
+```
 
 ## Setup Wizard
 
-On first run, the wizard guides you through:
-1. **Admin Account** — create the primary administrator
-2. **Git Identity** — connect GitHub via Device Flow, Personal Access Token, or SSH key
-3. **AI Providers** — configure Claude (API key or claude.ai OAuth) and/or Codex (API key, Device Flow, or Azure OpenAI)
-4. **First Project** — optionally clone a repository into `/workspace`
+On first boot the wizard collects:
 
-After setup, all configuration is accessible via **Settings** in the user menu.
+1. **Admin account** — email + password (min 12 chars)
+2. **Git identity** — name + email + optional GitHub OAuth (device flow)
+3. **AI providers** — Anthropic API key and/or OpenAI API key (both optional, configurable later)
+4. **First project** — optional Git repo to clone into `/workspace`
+
+## Inviting Users
+
+After setup, admins can invite users from the dashboard:
+- Settings → Users → Enter email → Copy invite link
+- Invite links are single-use and expire after 48 hours
 
 ## Named Volumes (What Persists)
 
@@ -50,21 +64,33 @@ After setup, all configuration is accessible via **Settings** in the user menu.
 
 All volumes survive `docker compose up --build`. Only `docker compose down -v` removes them.
 
-## Development
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Runtime | Node.js 24 LTS |
+| Web Framework | Next.js 15 (App Router) |
+| Database | SQLite + Prisma |
+| AI — Primary | Claude Code (Anthropic) |
+| AI — Secondary | Codex (OpenAI) |
+| Container | Docker + Docker Compose |
+| Reverse Proxy | Traefik v3 (external) |
+
+## Local Development
 
 ```bash
-# Clone and install
-git clone ... && cd forgeos && npm install
+# Install dependencies
+npm install
 
-# Generate Prisma client
-npm run db:generate
+# Set up local environment
+cp .env.example .env
+# Set DATABASE_URL=file:./dev.db in .env
 
-# Run in dev mode (hot reload)
+# Initialize database
+npx prisma db push
+
+# Start dev server
 npm run dev
-
-# Build for production
-npm run build
-npm run start
 ```
 
 ## Project Structure
@@ -94,3 +120,7 @@ ForgeOS uses a two-layer memory system for AI assistants:
 - **Learned knowledge** (`/root/.forgeos/ai-memory/`) — in named volume, grows over time
 
 See `CLAUDE.md` and `AGENTS.md` for how Claude and Codex read both layers.
+
+## License
+
+MIT
