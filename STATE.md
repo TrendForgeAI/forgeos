@@ -1,17 +1,15 @@
 # ForgeOS — Project State
 
 ## Zuletzt erledigt
-Phase 2 (Terminal + StatusBar) — ResizeObserver-Bug gefixt, Empty State für PanelGrid, Git-Branch-API, StatusBar mit Live-Daten, Orchestrator aus DB laden.
+Phase 2 (AI Chat Panel) — Streaming-Chat mit Claude/Codex, 60/40 Terminal|Chat Split, useEffect-Import-Fix.
 
 ## Stand
-Phase 1 vollständig. Phase 2 teilweise:
-- Terminal: xterm.js + WebSocket PTY voll funktionsfähig, Memory-Leaks gefixt
-- PanelGrid: Empty State wenn kein Projekt ausgewählt (kein PTY-Spawn mehr)
-- StatusBar: zeigt Orchestrator, Projektname, Git-Branch (live, alle 5s)
-- Orchestrator wird beim Mount aus DB geladen
+Phase 1 vollständig. Phase 2 weitgehend abgeschlossen:
+- Terminal: xterm.js + WebSocket PTY voll funktionsfähig
+- Chat: Streaming-Chat Panel neben Terminal, Claude + Codex, AbortController
+- StatusBar: Orchestrator, Projektname, Git-Branch (live)
+- PanelGrid: 60/40 Split, Empty State ohne Projekt
 
 ## Nächster Schritt
-Phase 2 fortsetzen:
-- AI Chat Panel mit Stream-Transport
-- File Editor (CodeMirror)
-- Preview Panel (optional)
+Phase 2 abschließen:
+- File Editor (CodeMirror) — letztes fehlendes Panel

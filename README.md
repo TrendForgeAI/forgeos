@@ -7,6 +7,7 @@ Deploy from a Git repo, run the setup wizard in your browser, start building.
 
 ForgeOS is a self-hosted platform that combines:
 - **Web-based terminal** — full PTY access in the browser
+- **AI chat panel** — streaming chat with Claude or Codex, next to the terminal
 - **AI coding agents** — Claude Code and Codex, per project, per-subprocess
 - **Multi-user** — invite-based access, role-based permissions (admin/user)
 - **Provider routing** — route tasks to the right model automatically
