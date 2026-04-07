@@ -1,15 +1,18 @@
 # ForgeOS — Project State
 
 ## Zuletzt erledigt
-Phase 2 (AI Chat Panel) — Streaming-Chat mit Claude/Codex, 60/40 Terminal|Chat Split, useEffect-Import-Fix.
+Phase 2 (File Editor) — CodeMirror 6 Overlay-Editor, Dateibaum in Sidebar, File-APIs (read/write/tree).
 
 ## Stand
-Phase 1 vollständig. Phase 2 weitgehend abgeschlossen:
-- Terminal: xterm.js + WebSocket PTY voll funktionsfähig
-- Chat: Streaming-Chat Panel neben Terminal, Claude + Codex, AbortController
-- StatusBar: Orchestrator, Projektname, Git-Branch (live)
-- PanelGrid: 60/40 Split, Empty State ohne Projekt
+Phase 1 + Phase 2 vollständig:
+- Terminal: xterm.js + WebSocket PTY
+- Chat: Streaming Claude/Codex Panel
+- File Editor: CodeMirror 6, Syntax für TS/JS/Py/JSON/MD, ESC/Ctrl+S
+- Dateibaum in Sidebar, expandierbare Verzeichnisse
+- StatusBar: Orchestrator, Projekt, Git-Branch live
 
 ## Nächster Schritt
-Phase 2 abschließen:
-- File Editor (CodeMirror) — letztes fehlendes Panel
+Phase 3: Permissions + Settings
+- 4-Stufen-Berechtigungssystem
+- Settings-Seite (Wizard-Teile wiederverwendbar)
+- User-Management (Admin: einladen, entfernen)
