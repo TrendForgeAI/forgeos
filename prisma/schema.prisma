@@ -56,3 +56,12 @@ model Project {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String
+  userName  String
+  action    String   // "login" | "commit" | "push" | "file_write" | "project_create" | "project_delete"
+  target    String?  // path, project name, etc.
+  createdAt DateTime @default(now())
+}

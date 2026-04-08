@@ -7,12 +7,13 @@ import path from "path";
 import { validatePath } from "@/lib/files";
 import { requireRole } from "@/lib/auth";
 import { getConfig } from "@/lib/config";
+import { logActivity } from "@/lib/activity";
 
 const execFileAsync = promisify(execFile);
 
 export async function POST(req: NextRequest) {
   try {
-    await requireRole("developer");
+    const session = await requireRole("developer");
     const { path: repoPath, message, files } = await req.json();
     if (!repoPath || !message) return NextResponse.json({ error: "path and message required" }, { status: 400 });
     const safe = validatePath(repoPath);
@@ -37,6 +38,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { stdout } = await execFileAsync("git", ["commit", "-m", message], { cwd: safe, env });
+    logActivity(session.user.id, session.user.name, "commit", `${safe}: ${message}`);
     return NextResponse.json({ success: true, output: stdout });
   } catch (err: unknown) {
     const e = err as { stderr?: string; message?: string };

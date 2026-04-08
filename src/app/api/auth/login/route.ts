@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyPassword, createSession, sessionCookieOptions } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,6 +25,8 @@ export async function POST(req: NextRequest) {
     const token = await createSession(user.id);
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     const cookieOpts = sessionCookieOptions(token, expiresAt);
+
+    logActivity(user.id, user.name, "login");
 
     const res = NextResponse.json({ success: true, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
     res.cookies.set(cookieOpts);

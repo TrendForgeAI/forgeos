@@ -5,16 +5,18 @@ import { execFile } from "child_process";
 import { promisify } from "util";
 import { validatePath } from "@/lib/files";
 import { requireRole } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 
 const execFileAsync = promisify(execFile);
 
 export async function POST(req: NextRequest) {
   try {
-    await requireRole("developer");
+    const session = await requireRole("developer");
     const { path: repoPath } = await req.json();
     if (!repoPath) return NextResponse.json({ error: "path required" }, { status: 400 });
     const safe = validatePath(repoPath);
     const { stdout, stderr } = await execFileAsync("git", ["push"], { cwd: safe, timeout: 30000 });
+    logActivity(session.user.id, session.user.name, "push", safe);
     return NextResponse.json({ success: true, output: stdout || stderr });
   } catch (err: unknown) {
     const e = err as { stderr?: string; message?: string };

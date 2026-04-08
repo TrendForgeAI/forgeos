@@ -5,13 +5,14 @@ import GitSettings from "./GitSettings";
 import ClaudeSettings from "./ClaudeSettings";
 import CodexSettings from "./CodexSettings";
 import UserManagementPanel from "@/components/admin/UserManagementPanel";
+import ActivityPanel from "@/components/admin/ActivityPanel";
 
 interface Props {
   onClose: () => void;
   currentUser: { id: string; role: string };
 }
 
-type Tab = "git" | "claude" | "codex" | "users";
+type Tab = "git" | "claude" | "codex" | "users" | "activity";
 
 export default function GlobalSettingsOverlay({ onClose, currentUser }: Props) {
   const [tab, setTab] = useState<Tab>("git");
@@ -52,6 +53,7 @@ export default function GlobalSettingsOverlay({ onClose, currentUser }: Props) {
           {tabBtn("claude", "Claude")}
           {tabBtn("codex", "Codex")}
           {currentUser.role === "admin" && tabBtn("users", "Users")}
+          {tabBtn("activity", "Activity")}
         </div>
         <div style={{ flex: 1, overflow: "auto", padding: "20px" }}>
           {tab === "git" && <GitSettings showSaveButton onSave={() => onClose()} />}
@@ -60,6 +62,7 @@ export default function GlobalSettingsOverlay({ onClose, currentUser }: Props) {
           {tab === "users" && currentUser.role === "admin" && (
             <UserManagementPanel currentUserId={currentUser.id} />
           )}
+          {tab === "activity" && <ActivityPanel />}
         </div>
       </div>
     </div>

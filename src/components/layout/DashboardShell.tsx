@@ -60,6 +60,7 @@ export default function DashboardShell({ user }: Props) {
             activeProject={activeProject}
             onSelectProject={setActiveProject}
             onOpenFile={setOpenFilePath}
+            currentUserRole={user.role}
           />
         )}
         <main style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
