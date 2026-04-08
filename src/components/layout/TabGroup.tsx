@@ -69,7 +69,7 @@ export default function TabGroup({ group, projectPath, onGroupChange, openFilePa
           <TerminalPanel projectPath={projectPath ? projectPath : "/workspace"} />
         )}
         {(activeTab?.type === "chat-claude" || activeTab?.type === "chat-codex") && (
-          <ChatPanel provider={activeTab.type === "chat-claude" ? "claude" : "codex"} projectPath={projectPath} />
+          <ChatPanel activeProject={projectPath} />
         )}
         {(activeTab?.type === "editor" || activeTab?.type === "viewer") && activeTab.filePath && (
           <EditorPanel
