@@ -69,9 +69,29 @@ export async function requireAuth() {
   return session;
 }
 
+// Role hierarchy: admin > developer > viewer > guest
+// "user" is treated as "developer" for backward compatibility
+const ROLE_LEVEL: Record<string, number> = {
+  admin: 3,
+  developer: 2,
+  user: 2, // legacy alias
+  viewer: 1,
+  guest: 0,
+};
+
 export async function requireAdmin() {
   const session = await requireAuth();
   if (session.user.role !== "admin") {
+    throw new Error("Forbidden");
+  }
+  return session;
+}
+
+export async function requireRole(minRole: "admin" | "developer" | "viewer" | "guest") {
+  const session = await requireAuth();
+  const userLevel = ROLE_LEVEL[session.user.role] ?? 0;
+  const minLevel = ROLE_LEVEL[minRole] ?? 0;
+  if (userLevel < minLevel) {
     throw new Error("Forbidden");
   }
   return session;

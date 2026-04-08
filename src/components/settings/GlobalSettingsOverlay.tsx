@@ -4,14 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import GitSettings from "./GitSettings";
 import ClaudeSettings from "./ClaudeSettings";
 import CodexSettings from "./CodexSettings";
+import UserManagementPanel from "@/components/admin/UserManagementPanel";
 
 interface Props {
   onClose: () => void;
+  currentUser: { id: string; role: string };
 }
 
-type Tab = "git" | "claude" | "codex";
+type Tab = "git" | "claude" | "codex" | "users";
 
-export default function GlobalSettingsOverlay({ onClose }: Props) {
+export default function GlobalSettingsOverlay({ onClose, currentUser }: Props) {
   const [tab, setTab] = useState<Tab>("git");
   const dialogRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
@@ -49,11 +51,15 @@ export default function GlobalSettingsOverlay({ onClose }: Props) {
           {tabBtn("git", "Git")}
           {tabBtn("claude", "Claude")}
           {tabBtn("codex", "Codex")}
+          {currentUser.role === "admin" && tabBtn("users", "Users")}
         </div>
         <div style={{ flex: 1, overflow: "auto", padding: "20px" }}>
           {tab === "git" && <GitSettings showSaveButton onSave={() => onClose()} />}
           {tab === "claude" && <ClaudeSettings showSaveButton onSave={() => onClose()} />}
           {tab === "codex" && <CodexSettings showSaveButton onSave={() => onClose()} />}
+          {tab === "users" && currentUser.role === "admin" && (
+            <UserManagementPanel currentUserId={currentUser.id} />
+          )}
         </div>
       </div>
     </div>

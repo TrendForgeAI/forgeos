@@ -4,11 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { validatePath } from "@/lib/files";
-import { requireAuth } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
-    await requireAuth();
+    await requireRole("developer");
     const { path: filePath, content } = await req.json();
     if (!filePath || content === undefined) return NextResponse.json({ error: "path and content required" }, { status: 400 });
     const safe = validatePath(filePath);

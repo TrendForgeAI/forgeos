@@ -4,11 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { mkdir, rename, rm, writeFile } from "fs/promises";
 import path from "path";
 import { validatePath } from "@/lib/files";
-import { requireAuth } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
-    await requireAuth();
+    await requireRole("developer");
     const { action, path: filePath, newPath, name } = await req.json();
     const safe = validatePath(filePath);
 

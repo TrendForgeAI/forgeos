@@ -1,17 +1,14 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { execFile } from "child_process";
 import { promisify } from "util";
 
 const execFileAsync = promisify(execFile);
 
 export async function GET(req: NextRequest) {
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  try { await requireRole("viewer"); } catch { return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); }
 
   const path = req.nextUrl.searchParams.get("path");
   if (!path || !path.startsWith("/workspace/")) {

@@ -12,7 +12,7 @@ model User {
   email        String    @unique
   passwordHash String
   name         String
-  role         String    @default("user") // "admin" | "user"
+  role         String    @default("developer") // "admin" | "developer" | "viewer" | "guest"
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 

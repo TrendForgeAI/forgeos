@@ -3,8 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+const ROLE_BADGE: Record<string, string> = {
+  admin: "Admin",
+  developer: "Dev",
+  viewer: "Viewer",
+  guest: "Guest",
+};
+
 interface Props {
-  user: { name: string; email: string };
+  user: { name: string; email: string; role?: string };
   onOpenGlobalSettings: () => void;
   onOpenProjectSettings: () => void;
 }
@@ -50,7 +57,14 @@ export default function UserMenu({ user, onOpenGlobalSettings, onOpenProjectSett
       {open && (
         <div style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "8px", boxShadow: "0 4px 16px rgba(0,0,0,0.2)", minWidth: "180px", zIndex: 100, overflow: "hidden" }}>
           <div style={{ padding: "8px 16px", borderBottom: "1px solid var(--border)" }}>
-            <p style={{ fontSize: "12px", fontWeight: 600 }}>{user.name}</p>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <p style={{ fontSize: "12px", fontWeight: 600 }}>{user.name}</p>
+              {user.role && (
+                <span style={{ fontSize: "10px", padding: "1px 5px", borderRadius: "4px", background: "var(--bg)", border: "1px solid var(--border)", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  {ROLE_BADGE[user.role] ?? user.role}
+                </span>
+              )}
+            </div>
             <p style={{ fontSize: "11px", color: "var(--muted)" }}>{user.email}</p>
           </div>
           <button style={itemStyle} onMouseEnter={e => (e.currentTarget.style.background = "var(--bg)")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")} onClick={() => { setOpen(false); }}>Profil</button>

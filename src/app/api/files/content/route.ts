@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { readFile, writeFile } from "fs/promises";
 import { resolve } from "path";
 
@@ -14,8 +14,7 @@ function safePath(input: string | null): string | null {
 }
 
 export async function GET(req: NextRequest) {
-  const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try { await requireRole("viewer"); } catch { return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); }
 
   const path = safePath(req.nextUrl.searchParams.get("path"));
   if (!path) return NextResponse.json({ error: "Access denied" }, { status: 403 });
@@ -33,8 +32,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try { await requireRole("developer"); } catch { return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); }
 
   const body = await req.json();
   const path = safePath(body.path ?? null);

@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { readdir } from "fs/promises";
 import { resolve, join } from "path";
 
@@ -44,8 +44,7 @@ async function listDir(dirPath: string, depth: number): Promise<FileNode[]> {
 }
 
 export async function GET(req: NextRequest) {
-  const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try { await requireRole("viewer"); } catch { return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); }
 
   const path = req.nextUrl.searchParams.get("path") ?? "";
   const resolved = resolve(path);

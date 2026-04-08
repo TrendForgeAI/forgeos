@@ -69,7 +69,7 @@ export default function DashboardShell({ user }: Props) {
 
       <StatusBar orchestrator={orchestrator} activeProject={activeProject} />
 
-      {overlay === "global-settings" && <GlobalSettingsOverlay onClose={() => setOverlay(null)} />}
+      {overlay === "global-settings" && <GlobalSettingsOverlay onClose={() => setOverlay(null)} currentUser={{ id: user.id, role: user.role }} />}
       {overlay === "project-settings" && <ProjectSettingsOverlay activeProject={activeProject} onClose={() => setOverlay(null)} />}
     </div>
   );

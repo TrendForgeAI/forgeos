@@ -1,12 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { getConfig, getProviderRouting } from "@/lib/config";
 
 export async function POST(req: NextRequest) {
   try {
-    await requireAuth();
+    await requireRole("developer");
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

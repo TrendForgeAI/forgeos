@@ -4,13 +4,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import { validatePath } from "@/lib/files";
-import { requireAuth } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 
 const execFileAsync = promisify(execFile);
 
 export async function GET(req: NextRequest) {
   try {
-    await requireAuth();
+    await requireRole("viewer");
     const repoPath = req.nextUrl.searchParams.get("path") ?? "/workspace";
     const safe = validatePath(repoPath);
 

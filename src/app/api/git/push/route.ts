@@ -4,13 +4,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import { validatePath } from "@/lib/files";
-import { requireAuth } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 
 const execFileAsync = promisify(execFile);
 
 export async function POST(req: NextRequest) {
   try {
-    await requireAuth();
+    await requireRole("developer");
     const { path: repoPath } = await req.json();
     if (!repoPath) return NextResponse.json({ error: "path required" }, { status: 400 });
     const safe = validatePath(repoPath);

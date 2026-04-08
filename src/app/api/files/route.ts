@@ -4,11 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { readdir, stat } from "fs/promises";
 import path from "path";
 import { validatePath } from "@/lib/files";
-import { requireAuth } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
-    await requireAuth();
+    await requireRole("viewer");
     const dir = req.nextUrl.searchParams.get("path") ?? "/workspace";
     const safe = validatePath(dir);
 

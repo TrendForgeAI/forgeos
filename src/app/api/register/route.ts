@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     const passwordHash = await hashPassword(password);
     await prisma.$transaction([
       prisma.user.create({
-        data: { name, email: invite.email, passwordHash, role: "user" },
+        data: { name, email: invite.email, passwordHash, role: "developer" },
       }),
       prisma.invite.update({
         where: { id: invite.id },

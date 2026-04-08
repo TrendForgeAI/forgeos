@@ -3,11 +3,11 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import { validatePath } from "@/lib/files";
-import { requireAuth } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
-    await requireAuth();
+    await requireRole("viewer");
     const filePath = req.nextUrl.searchParams.get("path");
     if (!filePath) return NextResponse.json({ error: "path required" }, { status: 400 });
     const safe = validatePath(filePath);

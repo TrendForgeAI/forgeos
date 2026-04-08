@@ -5,14 +5,14 @@ import { execFile } from "child_process";
 import { promisify } from "util";
 import path from "path";
 import { validatePath } from "@/lib/files";
-import { requireAuth } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { getConfig } from "@/lib/config";
 
 const execFileAsync = promisify(execFile);
 
 export async function POST(req: NextRequest) {
   try {
-    await requireAuth();
+    await requireRole("developer");
     const { path: repoPath, message, files } = await req.json();
     if (!repoPath || !message) return NextResponse.json({ error: "path and message required" }, { status: 400 });
     const safe = validatePath(repoPath);
