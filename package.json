@@ -10,7 +10,12 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "test": "playwright test",
+    "test:api": "playwright test tests/api.spec.ts --project=api",
+    "test:e2e": "playwright test --project=e2e",
+    "test:report": "playwright show-report playwright-report",
+    "test:install": "playwright install chromium --with-deps"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.3",
@@ -41,6 +46,7 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.0",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie": "^0.6.0",
